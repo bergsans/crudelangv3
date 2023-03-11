@@ -4,10 +4,23 @@ fn main() {
     let _tokens = lexer.tokenize();
 }
 
+fn is_operator(char: char) -> bool {
+    match char {
+        '+' => true,
+        _ => false
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum OperatorKind {
+    Plus
+}
+
 #[derive(Debug, PartialEq)]
 enum TokenKind {
     Integer,
-    String
+    String,
+    Operator(OperatorKind)
 }
 
 #[derive(Debug, PartialEq)]
@@ -31,6 +44,7 @@ struct Lexer {
     position: usize
 }
 
+
 const EOF: char = '#';
 
 impl Lexer {
@@ -53,6 +67,18 @@ impl Lexer {
             }
         }
         buff
+    }
+
+    pub fn parse_operator(&mut self) -> OperatorKind {
+        match self.current_char()  {
+            '+' => {
+                self.position += 1;
+                OperatorKind::Plus
+            }
+            _ => {
+                panic!("Expected operator");
+            }
+        }
     }
 
     pub fn parse_string(&mut self) -> String {
@@ -84,6 +110,13 @@ impl Lexer {
                 _ if self.current_char().is_digit(10) => {
                     tokens.push(Token::new(TokenKind::Integer,self.parse_number()));
                 },
+                _ if is_operator(self.current_char()) => {
+                    let operator = self.current_char();
+                    tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), operator.to_string()));
+                },
+                ' ' => {
+                    self.position += 1;
+                }
                 '"' => {
                     tokens.push(Token::new(TokenKind::String,self.parse_string()));
                 }
@@ -115,5 +148,23 @@ mod tests {
         let mut lexer = Lexer::new(code);
         let tokens = lexer.tokenize();
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::String, literal: "text".to_string() });
+    }
+
+    #[test]
+    fn tokenize_plus() {
+        let code = "+".to_string();
+        let mut lexer = Lexer::new(code);
+        let tokens = lexer.tokenize();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Plus), literal: "+".to_string() });
+    }
+
+    #[test]
+    fn tokenize_expression() {
+        let code = "1 + 1".to_string();
+        let mut lexer = Lexer::new(code);
+        let tokens = lexer.tokenize();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
+        assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Plus), literal: "+".to_string() });
+        assert_eq!(tokens.get(2).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
     }
 }
