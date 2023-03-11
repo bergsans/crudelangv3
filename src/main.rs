@@ -1,8 +1,4 @@
-fn main() {
-    let code = "45".to_string();
-    let mut lexer = Lexer::new(code);
-    let _tokens = lexer.tokenize();
-}
+fn main() { }
 
 fn is_operator(char: char) -> bool {
     match char {
