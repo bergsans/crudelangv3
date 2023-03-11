@@ -1,9 +1,4 @@
-fn is_operator(char: char) -> bool {
-    match char {
-        '+' => true,
-        _ => false
-    }
-}
+mod predicates;
 
 #[derive(Debug, PartialEq)]
 pub enum OperatorKind {
@@ -104,7 +99,7 @@ impl Lexer {
                 _ if self.current_char().is_digit(10) => {
                     tokens.push(Token::new(TokenKind::Integer,self.parse_number()));
                 },
-                _ if is_operator(self.current_char()) => {
+                _ if predicates::is_operator(self.current_char()) => {
                     let operator = self.current_char();
                     tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), operator.to_string()));
                 },

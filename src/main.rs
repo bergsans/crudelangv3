@@ -1,9 +1,8 @@
 mod lexer;
 
 fn main() {
-    let code = "1 + 1".to_string();
-    let mut lexer = lexer::Lexer::new(code);
-    let tokens = lexer.tokenize();
+    let code = "123 + 321".to_string();
+    let tokens = lexer::Lexer::new(code).tokenize();
     println!("{:?}", tokens);
 }
 
