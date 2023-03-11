@@ -6,7 +6,8 @@ fn main() {
 
 #[derive(Debug, PartialEq)]
 enum TokenKind {
-    Integer
+    Integer,
+    String
 }
 
 #[derive(Debug, PartialEq)]
@@ -54,6 +55,24 @@ impl Lexer {
         buff
     }
 
+    pub fn parse_string(&mut self) -> String {
+        let mut buff: String = String::new();
+        self.position += 1;
+        loop {
+            match self.current_char() {
+            '"' => {
+                self.position += 1;
+                break;
+            }
+            _ => {
+                buff.push(self.current_char());
+                self.position += 1;
+            }
+            }
+        }
+        buff
+    }
+
     pub fn current_char(&self) -> char {
         *self.source.get(self.position).unwrap_or(&EOF)
     }
@@ -65,6 +84,9 @@ impl Lexer {
                 _ if self.current_char().is_digit(10) => {
                     tokens.push(Token::new(TokenKind::Integer,self.parse_number()));
                 },
+                '"' => {
+                    tokens.push(Token::new(TokenKind::String,self.parse_string()));
+                }
                 _ => {
                     //panic!("Invalid character!");
                     break;
@@ -87,4 +109,11 @@ mod tests {
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "45".to_string() });
     }
 
+    #[test]
+    fn tokenize_string() {
+        let code = "\"text\"".to_string();
+        let mut lexer = Lexer::new(code);
+        let tokens = lexer.tokenize();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::String, literal: "text".to_string() });
+    }
 }
