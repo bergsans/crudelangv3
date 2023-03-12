@@ -12,6 +12,21 @@ pub enum Node {
     },
 }
 
+impl Node {
+    pub fn eval(&mut self) -> i32 {
+        match self {
+            Node::Integer(n) => *n,
+            Node::BinaryExpression {
+                lhs: left,
+                op: OperatorKind::Aritmethic(Sign::Plus),
+                rhs: right
+            } => {
+                left.eval() + right.eval()
+            }
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Parser {
     tokens: Vec<Token>,
@@ -59,6 +74,7 @@ impl Parser {
 
         }
     }
+
 }
 
 #[cfg(test)]
@@ -101,5 +117,20 @@ mod tests {
             ),
             Err(_e) => ()
         };
+    }
+
+    #[test]
+    fn eval_expression_nested() {
+        assert_eq!(
+                Node::BinaryExpression {
+                    lhs: Box::new(Node::Integer(1)),
+                    op: OperatorKind::Aritmethic(Sign::Plus),
+                    rhs: Box::new(Node::BinaryExpression {
+                        lhs: Box::new(Node::Integer(2)),
+                        op: OperatorKind::Aritmethic(Sign::Plus),
+                        rhs: Box::new(Node::Integer(3)),
+                    })
+                }.eval(), 6
+            );
     }
 }
