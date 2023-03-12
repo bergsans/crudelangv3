@@ -138,32 +138,22 @@ mod tests {
     #[test]
     fn tokenize_number() {
         let code = "45".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(t.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "45".to_string() }),
-            Err(_e) => ()
-        };
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "45".to_string() });
     }
 
     #[test]
     fn tokenize_string() {
         let code = "\"text\"".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(t.get(0).unwrap(), &Token { kind: TokenKind::String, literal: "text".to_string() }),
-            Err(_e) => ()
-        };
-
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::String, literal: "text".to_string() });
     }
 
     #[test]
     fn tokenize_plus() {
         let code = "+".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(t.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() }),
-            Err(_e) => ()
-        };
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
     }
 
     #[test]
@@ -179,29 +169,16 @@ mod tests {
     #[test]
     fn tokenize_identifier() {
         let code = "someIdentifier".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(t.get(0).unwrap(), &Token { kind: TokenKind::Identifier, literal: "someIdentifier".to_string() }),
-            Err(_e) => ()
-        };
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Identifier, literal: "someIdentifier".to_string() });
     }
 
     #[test]
     fn tokenize_expression() {
         let code = "1 + 1".to_string();
-        let tokens = Lexer::new(code).tokenize();
-
-        match &tokens {
-            Ok(t) => assert_eq!(t.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() }),
-            Err(_e) => ()
-        };
-        match &tokens {
-            Ok(t) => assert_eq!(t.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() }),
-            Err(_e) => ()
-        };
-        match &tokens {
-            Ok(t) => assert_eq!(t.get(2).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() }),
-            Err(_e) => ()
-        };
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
+        assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
+        assert_eq!(tokens.get(2).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
     }
 }
