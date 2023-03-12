@@ -120,10 +120,10 @@ impl Lexer {
                     tokens.push(Token::new(TokenKind::Integer, self.parse_number())),
                 Some(maybe_operator) if predicates::is_operator(maybe_operator) =>
                     tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), maybe_operator.to_string())),
-                Some(c) if c == ' ' => self.position += 1,
+                Some(maybe_whitespace) if predicates::is_whitespace(maybe_whitespace) => self.position += 1,
                 Some(c) if c.is_alphabetic() =>
                     tokens.push(Token::new(TokenKind::Identifier, self.parse_identifier())),
-                Some(c) if c == '"' => tokens.push(Token::new(TokenKind::String,self.parse_string())),
+                Some(maybe_doublequote) if predicates::is_doublequote(maybe_doublequote) => tokens.push(Token::new(TokenKind::String,self.parse_string())),
                 _ => return Err(SyntaxError { message: "Invalid character".to_string() })
             }
         }
