@@ -36,7 +36,17 @@ impl Token {
             literal
         }
     }
+
+    pub fn get_kind(&self) -> &TokenKind {
+        &self.kind
+    }
+
+    pub fn get_literal(&self) -> &String {
+        &self.literal
+    }
 }
+
+
 
 #[derive(Debug)]
 pub struct Lexer {
@@ -89,6 +99,7 @@ impl Lexer {
         }
         buff
     }
+
 
     pub fn parse_string(&mut self) -> String {
         let mut buff: String = String::new();
