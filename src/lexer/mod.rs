@@ -14,7 +14,8 @@ pub enum OperatorKind {
 pub enum TokenKind {
     Integer,
     String,
-    Operator(OperatorKind)
+    Operator(OperatorKind),
+    Identifier
 }
 
 #[derive(Debug, PartialEq)]
@@ -66,10 +67,22 @@ impl Lexer {
                 self.position += 1;
                 OperatorKind::Aritmethic(Sign::Plus)
             }
-            _ => {
-                panic!("Expected operator");
+            _ => panic!("Expected operator")
+        }
+    }
+
+    pub fn parse_identifier(&mut self) -> String {
+        let mut buff: String = String::new();
+        loop {
+            match self.current_char() {
+                Some(c) if c.is_alphabetic() => {
+                    buff.push(self.current_char().unwrap());
+                    self.position += 1;
+                }
+                _ => break
             }
         }
+        buff
     }
 
     pub fn parse_string(&mut self) -> String {
@@ -103,6 +116,8 @@ impl Lexer {
                 Some(maybe_operator) if predicates::is_operator(maybe_operator) =>
                     tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), maybe_operator.to_string())),
                 Some(c) if c == ' ' => self.position += 1,
+                Some(c) if c.is_alphabetic() =>
+                    tokens.push(Token::new(TokenKind::Identifier, self.parse_identifier())),
                 Some(c) if c == '"' => tokens.push(Token::new(TokenKind::String,self.parse_string())),
                 _ => break
             }
@@ -134,6 +149,13 @@ mod tests {
         let code = "+".to_string();
         let tokens = Lexer::new(code).tokenize();
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
+    }
+
+    #[test]
+    fn tokenize_identifier() {
+        let code = "someIdentifier".to_string();
+        let tokens = Lexer::new(code).tokenize();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Identifier, literal: "someIdentifier".to_string() });
     }
 
     #[test]
