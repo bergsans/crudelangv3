@@ -1,8 +1,13 @@
 mod predicates;
 
 #[derive(Debug, PartialEq)]
-pub enum OperatorKind {
+pub enum Sign {
     Plus
+}
+
+#[derive(Debug, PartialEq)]
+pub enum OperatorKind {
+    Aritmethic(Sign)
 }
 
 #[derive(Debug, PartialEq)]
@@ -33,9 +38,6 @@ pub struct Lexer {
     position: usize
 }
 
-
-const EOF: char = '#';
-
 impl Lexer {
     pub fn new(contents: String) -> Self {
         Self {
@@ -47,12 +49,12 @@ impl Lexer {
     pub fn parse_number(&mut self) -> String {
         let mut buff: String = String::new();
         loop {
-            match self.current_char().is_digit(10) {
-            true => {
-                buff.push(self.current_char());
-                self.position += 1;
-            }
-            _ => break
+            match self.current_char() {
+                Some(c) if c.is_digit(10) => {
+                    buff.push(self.current_char().unwrap());
+                    self.position += 1;
+                }
+                _ => break
             }
         }
         buff
@@ -60,9 +62,9 @@ impl Lexer {
 
     pub fn parse_operator(&mut self) -> OperatorKind {
         match self.current_char()  {
-            '+' => {
+            Some(c) if c == '+' => {
                 self.position += 1;
-                OperatorKind::Plus
+                OperatorKind::Aritmethic(Sign::Plus)
             }
             _ => {
                 panic!("Expected operator");
@@ -75,12 +77,12 @@ impl Lexer {
         self.position += 1;
         loop {
             match self.current_char() {
-            '"' => {
+            Some(c) if c == '"' => {
                 self.position += 1;
                 break;
             }
             _ => {
-                buff.push(self.current_char());
+                buff.push(self.current_char().unwrap());
                 self.position += 1;
             }
             }
@@ -88,30 +90,21 @@ impl Lexer {
         buff
     }
 
-    pub fn current_char(&self) -> char {
-        *self.source.get(self.position).unwrap_or(&EOF)
+    pub fn current_char(&self) -> Option<char> {
+        self.source.get(self.position).copied()
     }
 
     pub fn tokenize(&mut self) -> Vec<Token> {
         let mut tokens: Vec<Token> = Vec::new();
         while self.position < self.source.len() {
             match self.current_char() {
-                _ if self.current_char().is_digit(10) => {
-                    tokens.push(Token::new(TokenKind::Integer,self.parse_number()));
-                },
-                _ if predicates::is_operator(self.current_char()) => {
-                    let operator = self.current_char();
-                    tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), operator.to_string()));
-                },
-                ' ' => {
-                    self.position += 1;
-                }
-                '"' => {
-                    tokens.push(Token::new(TokenKind::String,self.parse_string()));
-                }
-                _ => {
-                    break;
-                }
+                Some(c) if c.is_digit(10) =>
+                    tokens.push(Token::new(TokenKind::Integer, self.parse_number())),
+                Some(maybe_operator) if predicates::is_operator(maybe_operator) =>
+                    tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), maybe_operator.to_string())),
+                Some(c) if c == ' ' => self.position += 1,
+                Some(c) if c == '"' => tokens.push(Token::new(TokenKind::String,self.parse_string())),
+                _ => break
             }
         }
         tokens
@@ -140,7 +133,7 @@ mod tests {
     fn tokenize_plus() {
         let code = "+".to_string();
         let tokens = Lexer::new(code).tokenize();
-        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Plus), literal: "+".to_string() });
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
     }
 
     #[test]
@@ -148,7 +141,7 @@ mod tests {
         let code = "1 + 1".to_string();
         let tokens = Lexer::new(code).tokenize();
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
-        assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Plus), literal: "+".to_string() });
+        assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
         assert_eq!(tokens.get(2).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
     }
 }
