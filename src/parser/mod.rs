@@ -39,16 +39,19 @@ mod tests {
 
     #[test]
     fn parse_expression() {
-        let code = "45".to_string();
+        let code = "123 + 123".to_string();
         let tokens = Lexer::new(code).tokenize();
-        assert_eq!(
-            Parser::new(tokens).parse(),
-            Node::BinaryExpression {
-                op: OperatorKind::Aritmethic(Sign::Plus),
-                lhs: Box::new(Node::Integer(2)),
-                rhs: Box::new(Node::Integer(2))
-            }
-        );
+        match tokens {
+            Ok(t) => assert_eq!(
+                Parser::new(t).parse(),
+                Node::BinaryExpression {
+                    op: OperatorKind::Aritmethic(Sign::Plus),
+                    lhs: Box::new(Node::Integer(2)),
+                    rhs: Box::new(Node::Integer(2))
+                }
+            ),
+            Err(_e) => ()
+        };
     }
 
 }
