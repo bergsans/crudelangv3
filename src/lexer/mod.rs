@@ -2,7 +2,8 @@ mod predicates;
 
 #[derive(Debug, PartialEq)]
 pub enum Sign {
-    Plus
+    Plus,
+    Minus
 }
 
 #[derive(Debug, PartialEq)]
@@ -81,6 +82,10 @@ impl Lexer {
             Some(c) if c == '+' => {
                 self.position += 1;
                 OperatorKind::Aritmethic(Sign::Plus)
+            }
+            Some(c) if c == '-' => {
+                self.position += 1;
+                OperatorKind::Aritmethic(Sign::Minus)
             }
             _ => panic!("Expected operator")
         }
@@ -165,6 +170,13 @@ mod tests {
         let code = "+".to_string();
         let tokens = Lexer::new(code).tokenize().unwrap();
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
+    }
+
+    #[test]
+    fn tokenize_minus() {
+        let code = "-".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Minus)), literal: "-".to_string() });
     }
 
     #[test]

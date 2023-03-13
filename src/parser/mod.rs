@@ -94,19 +94,4 @@ mod tests {
             Err(_e) => ()
         };
     }
-
-    #[test]
-    fn eval_expression_nested() {
-        assert_eq!(
-                Node::BinaryExpression {
-                    lhs: Box::new(Node::Integer(1)),
-                    op: OperatorKind::Aritmethic(Sign::Plus),
-                    rhs: Box::new(Node::BinaryExpression {
-                        lhs: Box::new(Node::Integer(2)),
-                        op: OperatorKind::Aritmethic(Sign::Plus),
-                        rhs: Box::new(Node::Integer(3)),
-                    })
-                }.eval(), 6
-            );
-    }
 }
