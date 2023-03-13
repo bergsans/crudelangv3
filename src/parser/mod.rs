@@ -38,16 +38,23 @@ impl Parser {
         //println!("{:?}", self.position);
         //println!("{:?}", self.current_token());
         match self.peek_kind() {
-        Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus))) =>  {
-            self.position += 2;
-            Node::BinaryExpression {
-                lhs: Box::new(Node::Integer(to_number(current_token.get_literal()).unwrap())),
-                op: OperatorKind::Aritmethic(Sign::Plus),
-                rhs: Box::new(self.parse())
+            Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus))) =>  {
+                self.position += 2;
+                Node::BinaryExpression {
+                    lhs: Box::new(Node::Integer(to_number(current_token.get_literal()).unwrap())),
+                    op: OperatorKind::Aritmethic(Sign::Plus),
+                    rhs: Box::new(self.parse())
+                }
             }
-        }
-        _ => Node::Integer(to_number(current_token.get_literal()).unwrap())
-
+            Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Minus))) =>  {
+                self.position += 2;
+                Node::BinaryExpression {
+                    lhs: Box::new(Node::Integer(to_number(current_token.get_literal()).unwrap())),
+                    op: OperatorKind::Aritmethic(Sign::Minus),
+                    rhs: Box::new(self.parse())
+                }
+            }
+            _ => Node::Integer(to_number(current_token.get_literal()).unwrap())
         }
     }
 

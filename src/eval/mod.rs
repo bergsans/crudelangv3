@@ -1,3 +1,4 @@
+use crate::parser::*;
 use crate::lexer::*;
 
 #[derive(Debug, PartialEq)]
@@ -35,18 +36,27 @@ impl Node {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn eval_expression_nested() {
         assert_eq!(
                 Node::BinaryExpression {
-                    lhs: Box::new(Node::Integer(1)),
+                    lhs: Box::new(Node::Integer(2)),
                     op: OperatorKind::Aritmethic(Sign::Plus),
                     rhs: Box::new(Node::BinaryExpression {
                         lhs: Box::new(Node::Integer(2)),
                         op: OperatorKind::Aritmethic(Sign::Minus),
                         rhs: Box::new(Node::Integer(3)),
                     })
-                }.eval(), 1 + 2 - 3
+                }.eval(), 2 + 2 - 3
             );
+    }
+
+    #[test]
+    fn eval_expression_whole_flow() {
+        let code = "1 + 1".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        let mut ast = Parser::new(tokens).parse();
+        assert_eq!(ast.eval(), 2);
     }
 }

@@ -16,6 +16,8 @@ pub enum TokenKind {
     Integer,
     String,
     Operator(OperatorKind),
+    RightParens,
+    LeftParens,
     Identifier
 }
 
@@ -136,6 +138,10 @@ impl Lexer {
                     tokens.push(Token::new(TokenKind::Integer, self.parse_number())),
                 Some(maybe_operator) if predicates::is_operator(maybe_operator) =>
                     tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), maybe_operator.to_string())),
+                Some(maybe_leftparens) if maybe_leftparens == '(' =>
+                    tokens.push(Token::new(TokenKind::LeftParens, maybe_leftparens.to_string())),
+                Some(maybe_rightparens) if maybe_rightparens == ')' =>
+                    tokens.push(Token::new(TokenKind::RightParens, maybe_rightparens.to_string())),
                 Some(maybe_whitespace) if predicates::is_whitespace(maybe_whitespace) => self.position += 1,
                 Some(c) if c.is_alphabetic() =>
                     tokens.push(Token::new(TokenKind::Identifier, self.parse_identifier())),
