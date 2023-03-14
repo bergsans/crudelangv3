@@ -1,19 +1,16 @@
-use crate::parser::*;
 use crate::lexer::*;
+
+#[allow(unused_imports)]
+use crate::parser::*;
 
 #[derive(Debug, PartialEq)]
 pub struct Ast {
-    pub program: Vec<Node>,
+    pub program: Node,
 }
 
-pub fn eval(ast: Ast) -> String {
-    let mut buff = Vec::<String>::new();
-    for mut statement in ast.program {
-        buff.push(statement.eval().to_string());
-    }
-    buff.join("\n")
+pub fn eval(mut ast: Ast) -> i32 {
+    ast.program.eval()
 }
-
 
 #[derive(Debug, PartialEq)]
 pub enum Node {
@@ -32,22 +29,22 @@ impl Node {
             Node::BinaryExpression {
                 lhs: left,
                 op: OperatorKind::Aritmethic(Sign::Plus),
-                rhs: right
+                rhs: right,
             } => left.eval() + right.eval(),
             Node::BinaryExpression {
                 lhs: left,
                 op: OperatorKind::Aritmethic(Sign::Minus),
-                rhs: right
+                rhs: right,
             } => left.eval() - right.eval(),
             Node::BinaryExpression {
                 lhs: left,
                 op: OperatorKind::Aritmethic(Sign::Mult),
-                rhs: right
+                rhs: right,
             } => left.eval() * right.eval(),
             Node::BinaryExpression {
                 lhs: left,
                 op: OperatorKind::Aritmethic(Sign::Div),
-                rhs: right
+                rhs: right,
             } => left.eval() / right.eval(),
         }
     }
@@ -60,84 +57,68 @@ mod tests {
     #[test]
     fn eval_expression_nested() {
         assert_eq!(
-                Node::BinaryExpression {
+            Node::BinaryExpression {
+                lhs: Box::new(Node::Integer(2)),
+                op: OperatorKind::Aritmethic(Sign::Plus),
+                rhs: Box::new(Node::BinaryExpression {
                     lhs: Box::new(Node::Integer(2)),
-                    op: OperatorKind::Aritmethic(Sign::Plus),
-                    rhs: Box::new(Node::BinaryExpression {
-                        lhs: Box::new(Node::Integer(2)),
-                        op: OperatorKind::Aritmethic(Sign::Minus),
-                        rhs: Box::new(Node::Integer(3)),
-                    })
-                }.eval(), 2 + 2 - 3
-            );
+                    op: OperatorKind::Aritmethic(Sign::Minus),
+                    rhs: Box::new(Node::Integer(3)),
+                })
+            }
+            .eval(),
+            2 + 2 - 3
+        );
     }
 
     #[test]
     fn eval_expression_add() {
-        let code = "1 + 1".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 2);
+        let ast = parse(tokenize("1 + 1".to_string()).unwrap());
+        assert_eq!(eval(ast), 2);
     }
 
     #[test]
     fn eval_expression_sub() {
-        let code = "1 - 1".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 0);
+        let ast = parse(tokenize("1 - 1".to_string()).unwrap());
+        assert_eq!(eval(ast), 0);
     }
 
     #[test]
     fn eval_expression_mult() {
-        let code = "5 * 5".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 25);
+        let ast = parse(tokenize("5 * 5".to_string()).unwrap());
+        assert_eq!(eval(ast), 25);
     }
 
     #[test]
     fn eval_expression_div() {
-        let code = "10 / 5".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 2);
+        let ast = parse(tokenize("10 / 5".to_string()).unwrap());
+        assert_eq!(eval(ast), 2);
     }
 
     #[test]
     fn eval_group_p1() {
-        let code = "1 + (2 + 3)".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 6);
+        let ast = parse(tokenize("1 + (2 + 3)".to_string()).unwrap());
+        assert_eq!(eval(ast), 6);
     }
 
     #[test]
     fn eval_group_p2() {
-        let code = "1 + (2 + (3 + 4))".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse_expression();
-        assert_eq!(ns.eval(), 10);
+        let ast = parse(tokenize("1 + (2 + (3 + 4))".to_string()).unwrap());
+        assert_eq!(eval(ast), 10);
     }
 
     #[test]
     fn eval_eval() {
-        let code = "1 + 1".to_string();
-        let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ns = Parser::new(tokens).parse().unwrap();
-        assert_eq!(eval(ns), "2");
+        let ast = parse(tokenize("1 + 1".to_string()).unwrap());
+        assert_eq!(eval(ast), 2);
     }
 
     #[test]
     fn eval_group_p3() {
-        let code1 = "5 * 5 + 10".to_string();
-        let tokens1 = Lexer::new(code1).tokenize().unwrap();
-        let mut ns1 = Parser::new(tokens1).parse_expression();
-        assert_eq!(ns1.eval(), 35);
+        let ast1 = parse(tokenize("5 * 5 + 10".to_string()).unwrap());
+        assert_eq!(eval(ast1), 35);
 
-        let code2 = "5 * (5 + 10)".to_string();
-        let tokens2 = Lexer::new(code2).tokenize().unwrap();
-        let mut ns2 = Parser::new(tokens2).parse_expression();
-        assert_eq!(ns2.eval(), 75);
+        let ast2 = parse(tokenize("5 * (5 + 10)".to_string()).unwrap());
+        assert_eq!(eval(ast2), 75);
     }
 }
