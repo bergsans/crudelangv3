@@ -1,4 +1,3 @@
-use crate::parser::*;
 use crate::lexer::*;
 
 #[derive(Debug, PartialEq)]

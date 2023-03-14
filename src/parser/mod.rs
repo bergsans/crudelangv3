@@ -60,7 +60,6 @@ impl Parser {
 
     pub fn parse_atomic(&mut self) -> Node {
         let current_token = self.tokens.get(self.position).unwrap();
-        println!("{:?}", current_token);
         match current_token.get_kind() {
             TokenKind::Integer => self.parse_integer(),
             TokenKind::LeftParens => self.parse_group(),
@@ -108,6 +107,7 @@ impl Parser {
         }
     }
 
+    #[allow(dead_code)]
     pub fn parse(&mut self) -> Result<Ast, SyntaxError> {
         let current_token = self.tokens.get(self.position).unwrap();
         let n: Node = match current_token.get_kind() {
