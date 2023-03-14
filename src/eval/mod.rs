@@ -59,4 +59,20 @@ mod tests {
         let mut ns = Parser::new(tokens).parse_expression();
         assert_eq!(ns.eval(), 2);
     }
+
+    #[test]
+    fn eval_group_p1() {
+        let code = "1 + (2 + 3)".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        let mut ns = Parser::new(tokens).parse_expression();
+        assert_eq!(ns.eval(), 6);
+    }
+
+    #[test]
+    fn eval_group_p2() {
+        let code = "1 + (2 + (3 + 4))".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        let mut ns = Parser::new(tokens).parse_expression();
+        assert_eq!(ns.eval(), 10);
+    }
 }

@@ -1,17 +1,17 @@
 mod predicates;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Sign {
     Plus,
     Minus
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum OperatorKind {
     Aritmethic(Sign)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TokenKind {
     Integer,
     String,
@@ -26,7 +26,7 @@ pub struct SyntaxError {
     pub message: String,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     kind: TokenKind,
     literal: String
@@ -77,6 +77,20 @@ impl Lexer {
             }
         }
         buff
+    }
+
+    pub fn parse_parens(&mut self) -> TokenKind {
+        match self.current_char()  {
+            Some(c) if c == '(' => {
+                self.position += 1;
+                TokenKind::LeftParens
+            }
+            Some(c) if c == ')' => {
+                self.position += 1;
+                TokenKind::RightParens
+            }
+            _ => panic!("Expected operator")
+        }
     }
 
     pub fn parse_operator(&mut self) -> OperatorKind {
@@ -138,10 +152,8 @@ impl Lexer {
                     tokens.push(Token::new(TokenKind::Integer, self.parse_number())),
                 Some(maybe_operator) if predicates::is_operator(maybe_operator) =>
                     tokens.push(Token::new(TokenKind::Operator(self.parse_operator()), maybe_operator.to_string())),
-                Some(maybe_leftparens) if maybe_leftparens == '(' =>
-                    tokens.push(Token::new(TokenKind::LeftParens, maybe_leftparens.to_string())),
-                Some(maybe_rightparens) if maybe_rightparens == ')' =>
-                    tokens.push(Token::new(TokenKind::RightParens, maybe_rightparens.to_string())),
+                Some(maybe_parens) if predicates::is_parens(maybe_parens) =>
+                    tokens.push(Token::new(self.parse_parens(), maybe_parens.to_string())),
                 Some(maybe_whitespace) if predicates::is_whitespace(maybe_whitespace) => self.position += 1,
                 Some(c) if c.is_alphabetic() =>
                     tokens.push(Token::new(TokenKind::Identifier, self.parse_identifier())),
@@ -209,5 +221,13 @@ mod tests {
         assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
         assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)), literal: "+".to_string() });
         assert_eq!(tokens.get(2).unwrap(), &Token { kind: TokenKind::Integer, literal: "1".to_string() });
+    }
+
+    #[test]
+    fn tokenize_parens() {
+        let code = "()".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(tokens.get(0).unwrap(), &Token { kind: TokenKind::LeftParens, literal: "(".to_string() });
+        assert_eq!(tokens.get(1).unwrap(), &Token { kind: TokenKind::RightParens, literal: ")".to_string() });
     }
 }
