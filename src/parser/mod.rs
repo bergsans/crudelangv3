@@ -3,11 +3,6 @@ use std::num::ParseIntError;
 use crate::eval::*;
 use crate::lexer::*;
 
-#[derive(Debug, PartialEq)]
-pub struct Ast {
-    program: Node,
-}
-
 #[derive(Debug)]
 pub struct Parser {
     tokens: Vec<Token>,
@@ -119,7 +114,8 @@ impl Parser {
             }
         };
 
-        Ok(Ast { program: n })
+        // refactor me
+        Ok(Ast { program: vec![n] })
     }
 }
 

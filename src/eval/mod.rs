@@ -1,4 +1,19 @@
+use crate::parser::*;
 use crate::lexer::*;
+
+#[derive(Debug, PartialEq)]
+pub struct Ast {
+    pub program: Vec<Node>,
+}
+
+pub fn eval(ast: Ast) -> String {
+    let mut buff = Vec::<String>::new();
+    for mut statement in ast.program {
+        buff.push(statement.eval().to_string());
+    }
+    buff.join("\n")
+}
+
 
 #[derive(Debug, PartialEq)]
 pub enum Node {
@@ -103,6 +118,14 @@ mod tests {
         let tokens = Lexer::new(code).tokenize().unwrap();
         let mut ns = Parser::new(tokens).parse_expression();
         assert_eq!(ns.eval(), 10);
+    }
+
+    #[test]
+    fn eval_eval() {
+        let code = "1 + 1".to_string();
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        let mut ns = Parser::new(tokens).parse().unwrap();
+        assert_eq!(eval(ns), "2");
     }
 
     #[test]
