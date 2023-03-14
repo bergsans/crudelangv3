@@ -3,6 +3,11 @@ use std::num::ParseIntError;
 use crate::lexer::*;
 use crate::eval::*;
 
+#[derive(Debug, PartialEq)]
+pub struct Ast {
+    program: Node
+}
+
 #[derive(Debug)]
 pub struct Parser {
     tokens: Vec<Token>,
@@ -32,18 +37,15 @@ impl Parser {
         self.tokens.get(self.position).unwrap()
     }
 
-    pub fn parse(&mut self) -> Node {
+    pub fn parse_expression(&mut self) -> Node {
         let current_token = self.tokens.get(self.position).unwrap();
-        //println!("{:?}", self.tokens);
-        //println!("{:?}", self.position);
-        //println!("{:?}", self.current_token());
         match self.peek_kind() {
             Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus))) =>  {
                 self.position += 2;
                 Node::BinaryExpression {
                     lhs: Box::new(Node::Integer(to_number(current_token.get_literal()).unwrap())),
                     op: OperatorKind::Aritmethic(Sign::Plus),
-                    rhs: Box::new(self.parse())
+                    rhs: Box::new(self.parse_expression())
                 }
             }
             Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Minus))) =>  {
@@ -51,13 +53,24 @@ impl Parser {
                 Node::BinaryExpression {
                     lhs: Box::new(Node::Integer(to_number(current_token.get_literal()).unwrap())),
                     op: OperatorKind::Aritmethic(Sign::Minus),
-                    rhs: Box::new(self.parse())
+                    rhs: Box::new(self.parse_expression())
                 }
             }
             _ => Node::Integer(to_number(current_token.get_literal()).unwrap())
         }
     }
 
+    pub fn parse(&mut self) -> Result<Ast, SyntaxError> {
+        let current_token = self.tokens.get(self.position).unwrap();
+        let n: Node = match current_token.get_kind() {
+            TokenKind::Integer =>  self.parse_expression(),
+            _ => return Err(SyntaxError { message: "Parse error".to_string() })
+        };
+
+        Ok(Ast {
+            program: n
+        })
+    }
 }
 
 #[cfg(test)]
@@ -67,38 +80,32 @@ mod tests {
     #[test]
     fn parse_expression() {
         let code = "123 + 123".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(
-                Parser::new(t).parse(),
-                Node::BinaryExpression {
-                    lhs: Box::new(Node::Integer(123)),
-                    op: OperatorKind::Aritmethic(Sign::Plus),
-                    rhs: Box::new(Node::Integer(123))
-                }
-            ),
-            Err(_e) => ()
-        };
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(
+            Parser::new(tokens).parse_expression(),
+            Node::BinaryExpression {
+                lhs: Box::new(Node::Integer(123)),
+                op: OperatorKind::Aritmethic(Sign::Plus),
+                rhs: Box::new(Node::Integer(123))
+            }
+        );
     }
 
     #[test]
     fn parse_expression_nested() {
         let code = "1 + 2 + 3".to_string();
-        let tokens = Lexer::new(code).tokenize();
-        match tokens {
-            Ok(t) => assert_eq!(
-                Parser::new(t).parse(),
-                Node::BinaryExpression {
-                    lhs: Box::new(Node::Integer(1)),
+        let tokens = Lexer::new(code).tokenize().unwrap();
+        assert_eq!(
+            Parser::new(tokens).parse_expression(),
+            Node::BinaryExpression {
+                lhs: Box::new(Node::Integer(1)),
+                op: OperatorKind::Aritmethic(Sign::Plus),
+                rhs: Box::new(Node::BinaryExpression {
+                    lhs: Box::new(Node::Integer(2)),
                     op: OperatorKind::Aritmethic(Sign::Plus),
-                    rhs: Box::new(Node::BinaryExpression {
-                        lhs: Box::new(Node::Integer(2)),
-                        op: OperatorKind::Aritmethic(Sign::Plus),
-                        rhs: Box::new(Node::Integer(3)),
-                    })
-                }
-            ),
-            Err(_e) => ()
-        };
+                    rhs: Box::new(Node::Integer(3)),
+                })
+            }
+        );
     }
 }

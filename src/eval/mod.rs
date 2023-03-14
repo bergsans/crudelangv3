@@ -56,7 +56,7 @@ mod tests {
     fn eval_expression_whole_flow() {
         let code = "1 + 1".to_string();
         let tokens = Lexer::new(code).tokenize().unwrap();
-        let mut ast = Parser::new(tokens).parse();
-        assert_eq!(ast.eval(), 2);
+        let mut ns = Parser::new(tokens).parse_expression();
+        assert_eq!(ns.eval(), 2);
     }
 }

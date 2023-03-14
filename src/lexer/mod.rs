@@ -23,7 +23,7 @@ pub enum TokenKind {
 
 #[derive(Debug, PartialEq)]
 pub struct SyntaxError {
-    message: String,
+    pub message: String,
 }
 
 #[derive(Debug, PartialEq)]
