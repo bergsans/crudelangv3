@@ -75,6 +75,12 @@ impl Parser {
             TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)) => {
                 OperatorKind::Aritmethic(Sign::Plus)
             }
+            TokenKind::Operator(OperatorKind::Aritmethic(Sign::Mult)) => {
+                OperatorKind::Aritmethic(Sign::Mult)
+            }
+            TokenKind::Operator(OperatorKind::Aritmethic(Sign::Div)) => {
+                OperatorKind::Aritmethic(Sign::Div)
+            }
             TokenKind::Operator(OperatorKind::Aritmethic(Sign::Minus)) => {
                 OperatorKind::Aritmethic(Sign::Minus)
             }
@@ -93,6 +99,8 @@ impl Parser {
     pub fn parse_expression(&mut self) -> Node {
         match self.peek_kind() {
             Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Plus)))
+            | Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Mult)))
+            | Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Div)))
             | Some(TokenKind::Operator(OperatorKind::Aritmethic(Sign::Minus))) => {
                 self.parse_binary_expression()
             }

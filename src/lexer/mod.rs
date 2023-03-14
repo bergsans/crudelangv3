@@ -3,7 +3,9 @@ mod predicates;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Sign {
     Plus,
-    Minus
+    Minus,
+    Mult,
+    Div
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -98,6 +100,14 @@ impl Lexer {
             Some(c) if c == '+' => {
                 self.position += 1;
                 OperatorKind::Aritmethic(Sign::Plus)
+            }
+            Some(c) if c == '*' => {
+                self.position += 1;
+                OperatorKind::Aritmethic(Sign::Mult)
+            }
+            Some(c) if c == '/' => {
+                self.position += 1;
+                OperatorKind::Aritmethic(Sign::Div)
             }
             Some(c) if c == '-' => {
                 self.position += 1;
